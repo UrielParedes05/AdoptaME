@@ -9,3 +9,10 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// Patitas App Colors
+val PrimaryCoral = Color(0xFFFF7051)
+val BackgroundCream = Color(0xFFFFF9F6)
+val SecondaryGray = Color(0xFF8A8A8A)
+val InputBackground = Color.White
+val BorderColor = Color(0xFFE0E0E0)
