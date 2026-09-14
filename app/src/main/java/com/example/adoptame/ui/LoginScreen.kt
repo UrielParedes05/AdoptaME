@@ -29,9 +29,10 @@ import com.example.adoptame.ui.theme.PrimaryCoral
 import com.example.adoptame.ui.theme.SecondaryGray
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -92,12 +93,24 @@ fun LoginScreen() {
         LoginInput(
             label = "Contraseña",
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { 
+                password = it
+                error = null 
+            },
             placeholder = "••••••••••••",
             leadingIcon = Icons.Default.Lock,
             trailingIcon = Icons.Default.VisibilityOff,
             isPassword = true
         )
+
+        error?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 8.dp).align(Alignment.Start)
+            )
+        }
 
         Text(
             text = "¿Olvidaste tu contraseña?",
@@ -112,7 +125,13 @@ fun LoginScreen() {
 
         // Action Buttons
         Button(
-            onClick = { /* Login */ },
+            onClick = {
+                if (email == "hola@tupatita.com" && password == "patitas123") {
+                    onLoginSuccess()
+                } else {
+                    error = "Credenciales incorrectas. Prueba con hola@tupatita.com / patitas123"
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -242,6 +261,6 @@ fun SocialButton(text: String, icon: String, modifier: Modifier = Modifier) {
 @Composable
 fun LoginPreview() {
     AdoptaMETheme {
-        LoginScreen()
+        LoginScreen(onLoginSuccess = {})
     }
 }

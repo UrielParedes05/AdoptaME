@@ -16,3 +16,6 @@ val BackgroundCream = Color(0xFFFFF9F6)
 val SecondaryGray = Color(0xFF8A8A8A)
 val InputBackground = Color.White
 val BorderColor = Color(0xFFE0E0E0)
+
+val WhatsAppGreen = Color(0xFF25D366)
+val AgeTagColor = Color(0xFFFFF0ED)
