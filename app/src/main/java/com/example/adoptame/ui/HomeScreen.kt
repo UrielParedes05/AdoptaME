@@ -1,8 +1,6 @@
 package com.example.adoptame.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,99 +16,53 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.adoptame.models.Pet
 import com.example.adoptame.ui.theme.*
+import com.example.adoptame.ui.PublishScreen
+import com.example.adoptame.ui.ExploreScreen
+import com.example.adoptame.ui.FavoritesScreen
+import com.example.adoptame.ui.ProfileScreen
 
 @Composable
-fun HomeScreen() {
-    var selectedCategory by remember { mutableStateOf("Perros") }
-    val categories = listOf("Perros", "Gatos", "Otros")
-    
-    // Fake Data
-    val pets = remember {
-        listOf(
-            Pet(
-                id = 1,
-                name = "Max",
-                breed = "Golden Retriever (Cachorro)",
-                age = "3 meses",
-                description = "Es un cachorro sumamente juguetón, inteligente y cariñoso. Le encanta correr en el jardín y ya sa...",
-                publisherName = "Carlos Mendoza",
-                category = "Perros"
-            ),
-            Pet(
-                id = 2,
-                name = "Luna",
-                breed = "Siamesa Mezcla",
-                age = "2 meses",
-                description = "Luna es súper dulce y tranquila. Le fascina acurrucarse en tu regazo mientras ronronea. Est...",
-                publisherName = "Gabriela Torres",
-                category = "Gatos"
-            )
-        )
-    }
+fun MainScreen(onLogout: () -> Unit) {
+    var selectedTab by remember { mutableStateOf("Inicio") }
 
     Scaffold(
-        bottomBar = { PatitasBottomNavBar() },
+        bottomBar = { 
+            PatitasBottomNavBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            ) 
+        },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { },
-                containerColor = PrimaryCoral,
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Publicar")
+            if (selectedTab == "Inicio") {
+                FloatingActionButton(
+                    onClick = { selectedTab = "Publicar" },
+                    containerColor = PrimaryCoral,
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Publicar")
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.End
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundCream)
-                .padding(padding)
-        ) {
-            PatitasTopBar()
-            
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(
-                    text = "¡Hola, Sofia! 👋",
-                    fontSize = 16.sp,
-                    color = SecondaryGray
-                )
-                Text(
-                    text = "Encuentra tu compañero ideal",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(vertical = 16.dp)
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            name = category,
-                            isSelected = selectedCategory == category,
-                            onClick = { selectedCategory = category }
-                        )
+        Box(modifier = Modifier.padding(padding)) {
+            when (selectedTab) {
+                "Inicio" -> HomeContent()
+                "Explorar" -> ExploreScreen()
+                "Publicar" -> PublishScreen(onBack = { selectedTab = "Inicio" })
+                "Favoritos" -> FavoritesScreen()
+                "Perfil" -> ProfileScreen(onLogout = onLogout)
+                else -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Pantalla de $selectedTab en desarrollo")
                     }
-                }
-            }
-
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                items(pets) { pet ->
-                    PetCard(pet)
                 }
             }
         }
@@ -118,41 +70,65 @@ fun HomeScreen() {
 }
 
 @Composable
+fun HomeContent() {
+    var selectedCategory by remember { mutableStateOf("Perros") }
+    val categories = listOf("Perros", "Gatos", "Otros")
+    
+    val pets = remember {
+        listOf(
+            Pet(1, "Max", "Golden Retriever (Cachorro)", "3 meses", "Es un cachorro sumamente juguetón...", "Carlos Mendoza", category = "Perros"),
+            Pet(2, "Luna", "Siamesa Mezcla", "2 meses", "Luna es súper dulce...", "Gabriela Torres", category = "Gatos")
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundCream)
+    ) {
+        PatitasTopBar()
+        
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Text("¡Hola, Sofia! 👋", fontSize = 16.sp, color = SecondaryGray)
+            Text("Encuentra tu compañero ideal", fontSize = 24.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(vertical = 16.dp)
+            ) {
+                items(categories) { category ->
+                    CategoryChip(category, selectedCategory == category) { selectedCategory = category }
+                }
+            }
+        }
+
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            items(pets) { pet -> PetCard(pet) }
+        }
+    }
+}
+
+@Composable
 fun PatitasTopBar() {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxWidth().padding(24.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(Color(0xFFFFE8E3), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.size(32.dp).background(Color(0xFFFFE8E3), CircleShape), contentAlignment = Alignment.Center) {
                 Text("🐾", fontSize = 16.sp)
             }
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Patitas",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryCoral
-            )
+            Text("Patitas", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryCoral)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { }) {
-                Icon(Icons.Outlined.Notifications, contentDescription = null)
-            }
+            IconButton(onClick = { }) { Icon(Icons.Outlined.Notifications, contentDescription = null) }
             Spacer(modifier = Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Gray, CircleShape)
-            )
+            Box(modifier = Modifier.size(40.dp).background(Color.Gray, CircleShape))
         }
     }
 }
@@ -162,7 +138,9 @@ fun CategoryChip(name: String, isSelected: Boolean, onClick: () -> Unit) {
     val icon = when(name) {
         "Perros" -> "🐶"
         "Gatos" -> "🐱"
-        else -> "🐰"
+        "Aves" -> "🦜"
+        "Conejos" -> "🐰"
+        else -> "🐹"
     }
     
     Surface(
@@ -171,17 +149,10 @@ fun CategoryChip(name: String, isSelected: Boolean, onClick: () -> Unit) {
         color = if (isSelected) PrimaryCoral else Color.White,
         shadowElevation = 2.dp
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(icon)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = name,
-                color = if (isSelected) Color.White else SecondaryGray,
-                fontWeight = FontWeight.Medium
-            )
+            Text(name, color = if (isSelected) Color.White else SecondaryGray, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -196,68 +167,24 @@ fun PetCard(pet: Pet) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Box {
-                // Image Placeholder
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.LightGray)
-                ) {
+                Box(modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(20.dp)).background(Color.LightGray)) {
                     Text("Imagen de ${pet.name}", Modifier.align(Alignment.Center))
                 }
-                
-                Surface(
-                    shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.8f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp)
-                        .size(36.dp)
-                ) {
-                    Icon(
-                        Icons.Outlined.FavoriteBorder,
-                        contentDescription = null,
-                        modifier = Modifier.padding(8.dp),
-                        tint = PrimaryCoral
-                    )
+                Surface(shape = CircleShape, color = Color.White.copy(alpha = 0.8f), modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).size(36.dp)) {
+                    Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, modifier = Modifier.padding(8.dp), tint = PrimaryCoral)
                 }
             }
-            
             Spacer(modifier = Modifier.height(16.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = pet.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Surface(
-                    color = AgeTagColor,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(
-                        text = pet.age,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = PrimaryCoral,
-                        fontSize = 12.sp
-                    )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(pet.name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Surface(color = AgeTagColor, shape = RoundedCornerShape(12.dp)) {
+                    Text(pet.age, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), color = PrimaryCoral, fontSize = 12.sp)
                 }
             }
-            
-            Text(text = pet.breed, color = SecondaryGray, fontSize = 14.sp)
-            
+            Text(pet.breed, color = SecondaryGray, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = pet.description,
-                color = SecondaryGray,
-                fontSize = 14.sp,
-                maxLines = 2
-            )
-            
+            Text(pet.description, color = SecondaryGray, fontSize = 14.sp, maxLines = 2)
             Spacer(modifier = Modifier.height(16.dp))
-            
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(32.dp).background(Color.Gray, CircleShape))
                 Spacer(modifier = Modifier.width(12.dp))
@@ -266,9 +193,7 @@ fun PetCard(pet: Pet) {
                     Text(pet.publisherName, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
-            
             Spacer(modifier = Modifier.height(16.dp))
-            
             Button(
                 onClick = { },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -284,49 +209,19 @@ fun PetCard(pet: Pet) {
 }
 
 @Composable
-fun PatitasBottomNavBar() {
-    NavigationBar(
-        containerColor = Color.White,
-        tonalElevation = 8.dp
-    ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-            label = { Text("Inicio", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(selectedIconColor = PrimaryCoral, selectedTextColor = PrimaryCoral)
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Default.Search, contentDescription = null) },
-            label = { Text("Explorar", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Default.AddBox, contentDescription = null) },
-            label = { Text("Publicar", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Outlined.FavoriteBorder, contentDescription = null) },
-            label = { Text("Favoritos", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Outlined.Person, contentDescription = null) },
-            label = { Text("Perfil", fontSize = 10.sp) }
-        )
-    }
-}
+fun PatitasBottomNavBar(selectedTab: String, onTabSelected: (String) -> Unit) {
+    val items = listOf("Inicio", "Explorar", "Publicar", "Favoritos", "Perfil")
+    val icons = listOf(Icons.Default.Home, Icons.Default.Search, Icons.Default.AddBox, Icons.Outlined.FavoriteBorder, Icons.Outlined.Person)
 
-@Preview(showBackground = true)
-@Composable
-fun HomePreview() {
-    AdoptaMETheme {
-        HomeScreen()
+    NavigationBar(containerColor = Color.White, tonalElevation = 8.dp) {
+        items.forEachIndexed { index, item ->
+            NavigationBarItem(
+                selected = selectedTab == item,
+                onClick = { onTabSelected(item) },
+                icon = { Icon(icons[index], contentDescription = item) },
+                label = { Text(item, fontSize = 10.sp) },
+                colors = NavigationBarItemDefaults.colors(selectedIconColor = PrimaryCoral, selectedTextColor = PrimaryCoral)
+            )
+        }
     }
 }
